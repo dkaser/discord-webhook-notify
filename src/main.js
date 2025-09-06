@@ -142,6 +142,9 @@ export async function run(mockedWebhookClient = null) {
             ""
         })
         .setTimestamp();
+
+      // Log the embed object for debugging
+      core.debug("Embed object: " + JSON.stringify(embed.toJSON()));
       msg = {
         username: username,
         avatarURL: avatarUrl,
