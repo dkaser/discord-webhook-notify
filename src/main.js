@@ -175,7 +175,7 @@ export async function run(mockedWebhookClient = null) {
 
   } catch (error) {
     // not so sure the workflow should show an error just because the notification failed
-    core.notice(error.message);
+    core.notice(error);
     return;
   }
 
