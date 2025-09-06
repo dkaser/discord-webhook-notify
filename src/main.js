@@ -71,7 +71,7 @@ export async function run(mockedWebhookClient = null) {
     const title = core.getInput("title") || "";
     const description = core.getInput("description") || "";
     const details = core.getInput("details") || "";
-    const footer = core.getInput("footer") || "";
+    const footer = core.getInput("footer");
     const color = core.getInput("color");
     const linkUrl = core.getInput("linkUrl");
     const fieldsInput = core.getInput("fields") || "[]";
@@ -141,7 +141,7 @@ export async function run(mockedWebhookClient = null) {
         .setFooter({
           text:
             truncateStringIfNeeded(processIfNeeded(footer)) ||
-            ""
+            null
         })
         .setTimestamp();
 
