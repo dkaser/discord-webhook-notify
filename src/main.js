@@ -46,8 +46,8 @@ export async function run(mockedWebhookClient = null) {
     if (typeof webhookUrl === "undefined" || !webhookUrl) {
       core.warning(
         "The webhookUrl was not provided. For security reasons the secret URL must be provided " +
-          "in the action yaml using a context expression and can not be read as a default.\n" +
-          "DISCORD NOTIFICATION NOT SENT"
+        "in the action yaml using a context expression and can not be read as a default.\n" +
+        "DISCORD NOTIFICATION NOT SENT"
       );
       return;
     } else if (webhookUrl === "useTestURL") {
@@ -63,7 +63,7 @@ export async function run(mockedWebhookClient = null) {
     const avatarUrl =
       truncateStringIfNeeded(core.getInput("avatarUrl")) || defaults.avatarUrl;
     const text =
-      truncateStringIfNeeded(processIfNeeded(core.getInput("text") || "" )) ;
+      truncateStringIfNeeded(processIfNeeded(core.getInput("text") || ""));
     const flags = core.getInput("flags") || "";
 
     // goes in embed in message
@@ -73,6 +73,36 @@ export async function run(mockedWebhookClient = null) {
     const details = core.getInput("details") || "";
     const footer = core.getInput("footer") || "";
     const color = core.getInput("color");
+    const linkUrl = core.getInput("linkUrl");
+    const fieldsInput = core.getInput("fields") || "[]";
+
+    let fields = [];
+    try {
+      fields = JSON.parse(fieldsInput);
+      if (!Array.isArray(fields)) {
+        throw new Error("fields is not an array");
+      }
+      if (fields.length > 25) {
+        core.warning("Discord only supports up to 25 fields. Extra fields ignored.");
+        fields = fields.slice(0, 25);
+      }
+      for (const field of fields) {
+        if (typeof field.name !== "string" || typeof field.value !== "string") {
+          throw new Error("field name or value is not a string");
+        }
+        field.name = truncateStringIfNeeded(processIfNeeded(field.name), 256);
+        field.value = truncateStringIfNeeded(processIfNeeded(field.value), 1024);
+        if (field.inline !== true) {
+          field.inline = false;
+        }
+      }
+    } catch (e) {
+      core.warning(
+        `The fields input is not valid JSON or is not an array of objects with name and value strings. Error: ${e.message}\n` +
+        "No fields will be sent."
+      );
+      fields = [];
+    }
 
     let webhookClient;
     /* istanbul ignore next */
@@ -94,20 +124,22 @@ export async function run(mockedWebhookClient = null) {
         .setTitle(
           truncateStringIfNeeded(title) || defaults.longSeverity[severity]
         )
+        .setURL(linkUrl || null)
         .setColor(color || defaults.colors[severity])
+        .addFields(fields)
         .setDescription(
           truncateStringIfNeeded(
             processIfNeeded(
               (description || (await defaults.getDefaultDescription())) +
-                "\n" +
-                details
+              "\n" +
+              details
             )
           )
         )
         .setFooter({
           text:
             truncateStringIfNeeded(processIfNeeded(footer)) ||
-            "Severity: " + defaults.longSeverity[severity]
+            ""
         })
         .setTimestamp();
       msg = {

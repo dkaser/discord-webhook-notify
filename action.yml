@@ -49,6 +49,17 @@ inputs:
       Additional text after the description in case you want to retain the default embed description.
       Defaults to empty string.
     required: false
+  linkUrl:
+    description: >
+      URL to link the title to. If not specified, title will not be a link.
+      If specified without a title, the link will be ignored.
+    required: false
+  fields:
+    description: >
+      A JSON array of field objects to add to the embed. Each object should have "name", "value",
+      and optional "inline" boolean properties. Example:
+      `[{"name":"Field1","value":"Some value","inline":true},{"name":"Field2","value":"Another value"}]`
+    required: false
   footer:
     description: Footer for the embed. Defaults to long terminology severity.
     required: false
