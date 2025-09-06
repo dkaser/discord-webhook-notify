@@ -120,6 +120,8 @@ export async function run(mockedWebhookClient = null) {
         avatarURL: avatarUrl
       };
     } else {
+      core.debug("Creating embed with severity " + severity);
+      core.debug(JSON.stringify(fields));
       const embed = new EmbedBuilder()
         .setTitle(
           truncateStringIfNeeded(title) || defaults.longSeverity[severity]
@@ -179,7 +181,9 @@ export async function run(mockedWebhookClient = null) {
   } catch (error) {
     // not so sure the workflow should show an error just because the notification failed
     core.notice(error);
-    return;
+
+    // rethrow
+    throw error;
   }
 
   await updateLockFileTime();
