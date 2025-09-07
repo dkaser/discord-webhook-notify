@@ -55,6 +55,9 @@ inputs:
       and optional "inline" boolean properties. Example:
       `[{"name":"Field1","value":"Some value","inline":true},{"name":"Field2","value":"Another value"}]`
     required: false
+  thumbnailUrl:
+    description: URL to a thumbnail image to show in the embed. May not work depending on Discord policy.
+    required: false
   footer:
     description: Footer for the embed. Defaults to long terminology severity.
     required: false

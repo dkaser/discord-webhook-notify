@@ -74,6 +74,7 @@ export async function run(mockedWebhookClient = null) {
     const color = core.getInput("color");
     const linkUrl = core.getInput("linkUrl");
     const fieldsInput = core.getInput("fields") || "[]";
+    const thumbnailUrl = core.getInput("thumbnailUrl");
 
     let fields = [];
     try {
@@ -136,6 +137,7 @@ export async function run(mockedWebhookClient = null) {
             truncateStringIfNeeded(processIfNeeded(footer)) ||
             null
         })
+        .setThumbnail(thumbnailUrl || null)
         .setTimestamp();
 
       // Log the embed object for debugging

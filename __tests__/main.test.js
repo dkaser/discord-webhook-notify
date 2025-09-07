@@ -238,4 +238,138 @@ describe("main.js", () => {
     test.todo("honors processing options");
 
   });
+
+  describe("fields processing", () => {
+    test("should warn and truncate when more than 25 fields are provided", async () => {
+      const mockWebhookClient = {
+        send: jest.fn().mockResolvedValue({})
+      };
+
+      // Create 30 fields to test the limit
+      const manyFields = Array.from({ length: 30 }, (_, i) => ({
+        name: `Field ${i}`,
+        value: `Value ${i}`,
+        inline: false
+      }));
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "severity") return "info";
+        if (name === "fields") return JSON.stringify(manyFields);
+        return "";
+      });
+
+      await run(mockWebhookClient);
+
+      expect(core.warning).toHaveBeenCalledWith("Discord only supports up to 25 fields. Extra fields ignored.");
+    });
+
+    test("should throw error when field name is not a string", async () => {
+      const mockWebhookClient = {
+        send: jest.fn().mockResolvedValue({})
+      };
+
+      const invalidFields = [
+        { name: 123, value: "valid value" }
+      ];
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "severity") return "info";
+        if (name === "fields") return JSON.stringify(invalidFields);
+        return "";
+      });
+
+      await run(mockWebhookClient);
+
+      expect(core.warning).toHaveBeenCalledWith(
+        expect.stringContaining("field name or value is not a string")
+      );
+    });
+
+    test("should throw error when field value is not a string", async () => {
+      const mockWebhookClient = {
+        send: jest.fn().mockResolvedValue({})
+      };
+
+      const invalidFields = [
+        { name: "valid name", value: 456 }
+      ];
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "severity") return "info";
+        if (name === "fields") return JSON.stringify(invalidFields);
+        return "";
+      });
+
+      await run(mockWebhookClient);
+
+      expect(core.warning).toHaveBeenCalledWith(
+        expect.stringContaining("field name or value is not a string")
+      );
+    });
+
+    test("should handle invalid JSON in fields input", async () => {
+      const mockWebhookClient = {
+        send: jest.fn().mockResolvedValue({})
+      };
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "severity") return "info";
+        if (name === "fields") return "invalid json{";
+        return "";
+      });
+
+      await run(mockWebhookClient);
+
+      expect(core.warning).toHaveBeenCalledWith(
+        expect.stringContaining("The fields input is not valid JSON")
+      );
+    });
+
+    test("should handle non-array fields input", async () => {
+      const mockWebhookClient = {
+        send: jest.fn().mockResolvedValue({})
+      };
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "severity") return "info";
+        if (name === "fields") return JSON.stringify({ not: "an array" });
+        return "";
+      });
+
+      await run(mockWebhookClient);
+
+      expect(core.warning).toHaveBeenCalledWith(
+        expect.stringContaining("not an array")
+      );
+    });
+
+    test("should handle fields input with missing name or value properties", async () => {
+      const mockWebhookClient = {
+        send: jest.fn().mockResolvedValue({})
+      };
+
+      const invalidFields = [
+        { name: "valid name" }, // missing value
+        { value: "valid value" } // missing name
+      ];
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "severity") return "info";
+        if (name === "fields") return JSON.stringify(invalidFields);
+        return "";
+      });
+
+      await run(mockWebhookClient);
+
+      expect(core.warning).toHaveBeenCalledWith(
+        expect.stringContaining("field name or value is not a string")
+      );
+    });
+  });
 });
