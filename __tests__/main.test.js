@@ -200,6 +200,7 @@ describe("main.js", () => {
         return {
           webhookUrl: regexCorrectWebhookUrl,
           severity: "info",
+          title: "Informational",
           description: "this is some info"
         }[input];
       });
