@@ -124,7 +124,7 @@ export async function run(mockedWebhookClient = null) {
       core.debug(JSON.stringify(fields));
       const embed = new EmbedBuilder()
         .setTitle(
-          truncateStringIfNeeded(title) || defaults.longSeverity[severity]
+          truncateStringIfNeeded(title) || null
         )
         .setURL(linkUrl || null)
         .setColor(color || defaults.colors[severity])
