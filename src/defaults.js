@@ -20,18 +20,3 @@ export const longSeverity = {
   warn: "Warning",
   error: "Error",
 };
-
-/**
- * @returns { undefined }
- * This default is very minimal and its much better to create one yourself.
- * See https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
- */
-export async function getDefaultDescription() {
-  const context = github.context;
-  return (
-    `- **Repository:** [${github.repository}](${github.repositoryUrl})\n` +
-    `- **Workflow:** ${context.workflow}\n` +
-    `- **Event:** ${context.eventName}\n` +
-    `- **Triggering Actor:** ${github.triggering_actor}\n`
-  );
-}

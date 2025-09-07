@@ -44,11 +44,6 @@ inputs:
   description:
     description: Embed notification message. Default provides some minimal github.context workflow info.
     required: false
-  details:
-    description: >
-      Additional text after the description in case you want to retain the default embed description.
-      Defaults to empty string.
-    required: false
   linkUrl:
     description: >
       URL to link the title to. If not specified, title will not be a link.

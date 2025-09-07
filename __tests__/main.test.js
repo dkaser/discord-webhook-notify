@@ -30,7 +30,7 @@ const regexCorrectWebhookUrl =
   "/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 describe("main.js", () => {
-  beforeEach(() => {});
+  beforeEach(() => { });
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -44,18 +44,18 @@ describe("main.js", () => {
     expect(getDebugTestUrl).toBeInstanceOf(Function);
   });
 
-  async function testGetDebugTestUrlHelper() {
+  function testGetDebugTestUrlHelper() {
     let url;
     try {
-      url = await getDebugTestUrl();
+      url = getDebugTestUrl();
     } catch (e) {
       return e.code + ": Test URL doesn't exist but that's OK.";
     }
     return url;
   }
 
-  it("getDebugTestUrl can be called", async () => {
-    const result = await testGetDebugTestUrlHelper();
+  it("getDebugTestUrl can be called", () => {
+    const result = testGetDebugTestUrlHelper();
     expect(result).toMatch(/^ENOENT|http/);
     console.log("Test URL: " + result)
   });
@@ -84,14 +84,14 @@ describe("main.js", () => {
           text: "content"
         }[input];
       });
-        let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
-        let result;
-        const twuh = async () => {
-          result = await testUseTestURLHelper(whc);
-        };
-        expect(twuh).not.toThrow();
+      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      let result;
+      const twuh = async () => {
         result = await testUseTestURLHelper(whc);
-        expect(result).toMatch(/^ENOINT|OK/);
+      };
+      expect(twuh).not.toThrow();
+      result = await testUseTestURLHelper(whc);
+      expect(result).toMatch(/^ENOINT|OK/);
     });
 
     it("generates the right error when webhookUrl is empty", async () => {
@@ -143,7 +143,7 @@ describe("main.js", () => {
           avatarUrl: "http://my.foot",
           text: "Some text.",
           severity: "error",
-          details: "This is a description"
+          description: "This is a description"
         }[input];
       });
       let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });

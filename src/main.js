@@ -28,7 +28,7 @@ import {
  *
  * @returns { String } with the Webhook URL, or whatever is in the txt file
  */
-export async function getDebugTestUrl() {
+export function getDebugTestUrl() {
   return fs.readFileSync(
     path.join(os.homedir(), "github_webhookUrl.txt"),
     "utf8"
@@ -51,7 +51,7 @@ export async function run(mockedWebhookClient = null) {
       );
       return;
     } else if (webhookUrl === "useTestURL") {
-      webhookUrl = await getDebugTestUrl();
+      webhookUrl = getDebugTestUrl();
       core.debug("Using local debug webhook in " + webhookUrl);
     }
     webhookUrl = webhookUrl.replace("/github", "");
@@ -70,7 +70,6 @@ export async function run(mockedWebhookClient = null) {
     const severity = core.getInput("severity") || "none";
     const title = core.getInput("title") || "";
     const description = core.getInput("description") || "";
-    const details = core.getInput("details") || "";
     const footer = core.getInput("footer");
     const color = core.getInput("color");
     const linkUrl = core.getInput("linkUrl");
@@ -130,13 +129,7 @@ export async function run(mockedWebhookClient = null) {
         .setColor(color || defaults.colors[severity])
         .addFields(fields)
         .setDescription(
-          truncateStringIfNeeded(
-            processIfNeeded(
-              (description || (await defaults.getDefaultDescription())) +
-              "\n" +
-              details
-            )
-          )
+          truncateStringIfNeeded(processIfNeeded((description))) || null
         )
         .setFooter({
           text:
@@ -182,8 +175,7 @@ export async function run(mockedWebhookClient = null) {
     // not so sure the workflow should show an error just because the notification failed
     core.notice(error);
 
-    // rethrow
-    throw error;
+    return;
   }
 
   await updateLockFileTime();

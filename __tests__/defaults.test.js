@@ -9,7 +9,7 @@ jest.unstable_mockModule("@actions/core", () => core);
 const defaults = await import("../src/defaults");
 
 describe("defaults.js", () => {
-  beforeEach(() => {});
+  beforeEach(() => { });
 
   afterEach(() => {
     jest.restoreAllMocks();
@@ -22,12 +22,5 @@ describe("defaults.js", () => {
   it("contains holddownTime", () => {
     expect(defaults.holddownTime).toBeDefined();
     expect(defaults.holddownTime).toBeGreaterThan(1000);
-  });
-
-  it("has a getDefaultDescription() that returns a description", async () => {
-    let str = await defaults.getDefaultDescription();
-    expect(defaults.getDefaultDescription).not.toThrow();
-    expect(str).toBeDefined();
-    expect(str).toMatch(/.{20,}/g)
   });
 });
