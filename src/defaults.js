@@ -2,11 +2,6 @@
  * File containing all the defaults
  */
 
-import * as github from "@actions/github";
-
-
-export const lockfileName = "discord-webhook-lastrun-time.lock";
-export const holddownTime = 3000; // ms
 export const avatarUrl =
   "https://cdn.jsdelivr.net/gh/rjstone/discord-webhook-notify@main/img/default_avatar.png";
 export const username = "Notification (GitHub)";

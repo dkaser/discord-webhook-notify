@@ -70,18 +70,6 @@ inputs:
       Workflow system if it does.
     required: false
     default: ""
-  holddownTime:
-    description: >
-      The minimum amount of time in miliseconds between successive notifications to avoid triggering Discord's
-      rate limiting.
-    required: false
-    default: "3000"
-  lockfileDir:
-    description: >
-      The directory where the lockfile used for saving last run time is stored.
-    required: false
-    default: "."
-
 
 runs:
   using: "node20"

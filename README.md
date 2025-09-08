@@ -163,20 +163,6 @@ another action should contain newlines, but won't be preserved by the
 Workflow system if it does. Right now, this is the only optional input
 processing.
 
-### `holddownTime`
-
-If a webhook is called too soon after a previous webhook call, Discord's server
-API will return a rate limit exceeded error. This doesn't necessarily work
-exactly according to Discord's documentation because GitHub runners seem to use
-shared IP addresses, and also the rate limit is dynamic. However, a delay
-of 2-3 seconds (default) since the last webhook HTTP requests seems to usually
-be good enough. If for some reason it isn't you can increase this wait time.
-
-### `lockfileDir`
-
-The directory where the lockfile used for saving last run time is stored.
-Default to the current directory but you can change it if it is in the way.
-
 ## Example usage
 
 ### Simple Usage Example

@@ -9,31 +9,15 @@ import os from "node:os";
 import path from "node:path";
 
 import * as core from "@actions/core";
-// import * as github from "@actions/github";
 
 import { EmbedBuilder, WebhookClient, MessageFlagsBitField } from "discord.js";
 
 import * as defaults from "./defaults";
-import { ensureDurationSinceLastRun, updateLockFileTime } from "./timelock";
 import {
   truncateStringIfNeeded,
   sanitizeUsername,
   processIfNeeded
 } from "./strutil";
-
-/**
- * For local workstation debugging only.
- * Will get the webhook URL from ~/github_webhookUrl.txt
- * This should be a path where it can't get accidentally committed to the repo.
- *
- * @returns { String } with the Webhook URL, or whatever is in the txt file
- */
-export function getDebugTestUrl() {
-  return fs.readFileSync(
-    path.join(os.homedir(), "github_webhookUrl.txt"),
-    "utf8"
-  );
-}
 
 /**
  * This is the main code for the GitHub Action
@@ -50,9 +34,6 @@ export async function run(mockedWebhookClient = null) {
         "DISCORD NOTIFICATION NOT SENT"
       );
       return;
-    } else if (webhookUrl === "useTestURL") {
-      webhookUrl = getDebugTestUrl();
-      core.debug("Using local debug webhook in " + webhookUrl);
     }
     webhookUrl = webhookUrl.replace("/github", "");
 
@@ -98,8 +79,7 @@ export async function run(mockedWebhookClient = null) {
       }
     } catch (e) {
       core.warning(
-        `The fields input is not valid JSON or is not an array of objects with name and value strings. Error: ${e.message}\n` +
-        "No fields will be sent."
+        `The fields input is not valid JSON or is not an array of objects with name and value strings. Error: ${e.message}\nNo fields will be sent.`
       );
       fields = [];
     }
@@ -120,7 +100,7 @@ export async function run(mockedWebhookClient = null) {
         avatarURL: avatarUrl
       };
     } else {
-      core.debug("Creating embed with severity " + severity);
+      core.debug(`Creating embed with severity ${severity}`);
       core.debug(JSON.stringify(fields));
       const embed = new EmbedBuilder()
         .setTitle(
@@ -141,7 +121,7 @@ export async function run(mockedWebhookClient = null) {
         .setTimestamp();
 
       // Log the embed object for debugging
-      core.debug("Embed object: " + JSON.stringify(embed.toJSON()));
+      core.debug(`Embed object: ${JSON.stringify(embed.toJSON())}`);
       msg = {
         username: username,
         avatarURL: avatarUrl,
@@ -149,37 +129,27 @@ export async function run(mockedWebhookClient = null) {
       };
     }
 
-    if (text) msg['content'] = text;
+    if (text) msg.content = text;
 
     if (flags !== "") {
-      msg["flags"] = 0;
+      msg.flags = 0;
       if (/SuppressNotifications/.test(flags)) {
-        msg["flags"] |= MessageFlagsBitField.Flags.SuppressNotifications;
+        msg.flags |= MessageFlagsBitField.Flags.SuppressNotifications;
       }
       if (/SuppressEmbeds/.test(flags)) {
-        msg["flags"] |= MessageFlagsBitField.Flags.SuppressEmbeds;
+        msg.flags |= MessageFlagsBitField.Flags.SuppressEmbeds;
       }
       if (/IsComponentsV2/.test(flags)) {
-        msg["flags"] |= MessageFlagsBitField.Flags.IsComponentsV2;
+        msg.flags |= MessageFlagsBitField.Flags.IsComponentsV2;
       }
     }
-
-    const holddownTime =
-      Number.parseInt(core.getInput("holddownTime"), 10) ||
-      defaults.holddownTime;
-
-    await ensureDurationSinceLastRun(holddownTime);
-
 
     await webhookClient.send(msg);
 
   } catch (error) {
     // not so sure the workflow should show an error just because the notification failed
     core.notice(error);
-
-    return;
   }
 
-  await updateLockFileTime();
   return;
 }

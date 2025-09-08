@@ -19,11 +19,9 @@ const core = await import("@actions/core"); // dynamic import actual
 // using jest.unstable_mockModule()
 import { MockWebhookClient } from "../__fixtures__/discord.js";
 
-import * as defaults from "../src/defaults.js";
-
 // The module being tested should be imported last, dynamically.
 // This ensures that the modules mocks are used in place their imports.
-const { run, getDebugTestUrl } = await import("../src/main.js");
+const { run } = await import("../src/main.js");
 
 const regexCorrectWebhookUrl =
   "https://discord.com/api/webhooks/999999999999999999" +
@@ -35,29 +33,9 @@ describe("main.js", () => {
     jest.clearAllMocks();
   });
 
-  it("is loaded and has a run() function", () => {
+  it("is loaded and has a await run() function", () => {
     expect(run).toBeDefined();
     expect(run).toBeInstanceOf(Function);
-  });
-
-  it("is loaded and has a function called getDebugTestUrl", () => {
-    expect(getDebugTestUrl).toBeInstanceOf(Function);
-  });
-
-  function testGetDebugTestUrlHelper() {
-    let url;
-    try {
-      url = getDebugTestUrl();
-    } catch (e) {
-      return e.code + ": Test URL doesn't exist but that's OK.";
-    }
-    return url;
-  }
-
-  it("getDebugTestUrl can be called", () => {
-    const result = testGetDebugTestUrlHelper();
-    expect(result).toMatch(/^ENOENT|http/);
-    console.log("Test URL: " + result)
   });
 
   describe("run", () => {
@@ -65,33 +43,6 @@ describe("main.js", () => {
     });
     afterEach(() => {
       // jest.clearAllMocks();
-    });
-
-    async function testUseTestURLHelper(whc) {
-      let status = "OK";
-      try {
-        await run(whc);
-      } catch (e) {
-        status = e.code;
-      }
-      return status;
-    }
-
-    it("recognizes webhookUrl == 'useTestURL'", async () => {
-      core.getInput.mockImplementation((input) => {
-        return {
-          webhookUrl: "useTestURL",
-          text: "content"
-        }[input];
-      });
-      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
-      let result;
-      const twuh = async () => {
-        result = await testUseTestURLHelper(whc);
-      };
-      expect(twuh).not.toThrow();
-      result = await testUseTestURLHelper(whc);
-      expect(result).toMatch(/^ENOINT|OK/);
     });
 
     it("generates the right error when webhookUrl is empty", async () => {
@@ -146,15 +97,15 @@ describe("main.js", () => {
           description: "This is a description"
         }[input];
       });
-      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
       await run(whc);
       expect(whc.send_called).toBe(true);
       expect(core.warning).not.toHaveBeenCalled();
       expect(core.notice).not.toHaveBeenCalled();
       const msg = whc.send_arg;
       expect(msg).toBeDefined();
-      expect(msg["content"]).toMatch(/\w+/);
-      expect(msg["username"]).toMatch(/\w{2,}/);
+      expect(msg.content).toMatch(/\w+/);
+      expect(msg.username).toMatch(/\w{2,}/);
       //resolvers[2]("test2 done");
     });
 
@@ -167,8 +118,8 @@ describe("main.js", () => {
           text: "Some text."
         }[input];
       });
-      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
-      whc.send = function () {
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      whc.send = () => {
         throw new Error();
       }
       await run(whc)
@@ -183,7 +134,7 @@ describe("main.js", () => {
           text: "Some text."
         }[input];
       });
-      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
       let err = false;
       try {
         await run(whc);
@@ -204,7 +155,7 @@ describe("main.js", () => {
           description: "this is some info"
         }[input];
       });
-      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
 
       await run(whc);
       expect(whc.send_called).toBe(true);
@@ -214,28 +165,8 @@ describe("main.js", () => {
       expect(whc.send_arg.embeds[0].data.description).toMatch("this is some info");
     });
 
-    it("works after delay if executed with no delay in between two calls", async () => {
-      // console.log(await Promise.all(promises));
-      core.getInput.mockImplementation((input) => {
-        return {
-          webhookUrl: regexCorrectWebhookUrl,
-          text: "foo",
-          username: "bar"
-        }[input];
-      });
-      let whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
-
-      const start_time = Date.now();
-      await run(whc);
-      expect(Date.now()).toBeGreaterThanOrEqual(start_time);
-      await run(whc);
-      const duration = Date.now() - start_time;
-      expect(duration).toBeGreaterThanOrEqual(defaults.holddownTime);
-    }, 10000);
-
     test.todo("works with each individual optional input set");
     test.todo("works with all inputs set");
-    test.todo("uses the configured holddownTime delay if set");
     test.todo("honors processing options");
 
   });
@@ -289,10 +220,6 @@ describe("main.js", () => {
     });
 
     test("should throw error when field value is not a string", async () => {
-      const mockWebhookClient = {
-        send: jest.fn().mockResolvedValue({})
-      };
-
       const invalidFields = [
         { name: "valid name", value: 456 }
       ];
@@ -304,7 +231,8 @@ describe("main.js", () => {
         return "";
       });
 
-      await run(mockWebhookClient);
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      await run(whc);
 
       expect(core.warning).toHaveBeenCalledWith(
         expect.stringContaining("field name or value is not a string")
@@ -312,18 +240,16 @@ describe("main.js", () => {
     });
 
     test("should handle invalid JSON in fields input", async () => {
-      const mockWebhookClient = {
-        send: jest.fn().mockResolvedValue({})
-      };
 
       core.getInput.mockImplementation((name) => {
-        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "webhookUrl") return regexCorrectWebhookUrl;
         if (name === "severity") return "info";
         if (name === "fields") return "invalid json{";
         return "";
       });
 
-      await run(mockWebhookClient);
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      await run(whc);
 
       expect(core.warning).toHaveBeenCalledWith(
         expect.stringContaining("The fields input is not valid JSON")
@@ -331,18 +257,16 @@ describe("main.js", () => {
     });
 
     test("should handle non-array fields input", async () => {
-      const mockWebhookClient = {
-        send: jest.fn().mockResolvedValue({})
-      };
 
       core.getInput.mockImplementation((name) => {
-        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "webhookUrl") return regexCorrectWebhookUrl;
         if (name === "severity") return "info";
         if (name === "fields") return JSON.stringify({ not: "an array" });
         return "";
       });
 
-      await run(mockWebhookClient);
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      await run(whc);
 
       expect(core.warning).toHaveBeenCalledWith(
         expect.stringContaining("not an array")
@@ -350,27 +274,56 @@ describe("main.js", () => {
     });
 
     test("should handle fields input with missing name or value properties", async () => {
-      const mockWebhookClient = {
-        send: jest.fn().mockResolvedValue({})
-      };
-
       const invalidFields = [
         { name: "valid name" }, // missing value
         { value: "valid value" } // missing name
       ];
 
       core.getInput.mockImplementation((name) => {
-        if (name === "webhookUrl") return "https://discord.com/api/webhooks/123/token";
+        if (name === "webhookUrl") return regexCorrectWebhookUrl;
         if (name === "severity") return "info";
         if (name === "fields") return JSON.stringify(invalidFields);
         return "";
       });
 
-      await run(mockWebhookClient);
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      await run(whc);
 
       expect(core.warning).toHaveBeenCalledWith(
         expect.stringContaining("field name or value is not a string")
       );
+    });
+
+    test("should set field.inline to false if not true", async () => {
+      const fieldsInput = [
+        { name: "Field 1", value: "Value 1" }, // no inline property
+        { name: "Field 2", value: "Value 2", inline: "not-boolean" }, // not true
+        { name: "Field 3", value: "Value 3", inline: false }, // already false
+        { name: "Field 4", value: "Value 4", inline: true } // should remain true
+      ];
+
+      core.getInput.mockImplementation((name) => {
+        if (name === "webhookUrl") return regexCorrectWebhookUrl;
+        if (name === "severity") return "info";
+        if (name === "fields") return JSON.stringify(fieldsInput);
+        return "";
+      });
+
+      const whc = new MockWebhookClient({ webhookUrl: regexCorrectWebhookUrl });
+      await run(whc);
+
+      // The fields are passed to EmbedBuilder.addFields, which expects inline to be boolean
+      // We can check what was sent to the mock webhook client
+      const sentMsg = whc.send_arg;
+      expect(sentMsg).toBeDefined();
+      expect(sentMsg.embeds).toBeDefined();
+      const embed = sentMsg.embeds[0];
+      const sentFields = embed.data.fields;
+
+      expect(sentFields[0].inline).toBe(false);
+      expect(sentFields[1].inline).toBe(false);
+      expect(sentFields[2].inline).toBe(false);
+      expect(sentFields[3].inline).toBe(true);
     });
   });
 });

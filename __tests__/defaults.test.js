@@ -15,12 +15,11 @@ describe("defaults.js", () => {
     jest.restoreAllMocks();
   });
 
-  it("contains lockfile name", () => {
-    expect(defaults.lockfileName).toBeDefined();
+  it("contains colors", () => {
+    expect(defaults.colors).toBeDefined();
   });
 
-  it("contains holddownTime", () => {
-    expect(defaults.holddownTime).toBeDefined();
-    expect(defaults.holddownTime).toBeGreaterThan(1000);
+  it("contains longSeverity", () => {
+    expect(defaults.longSeverity).toBeDefined();
   });
 });

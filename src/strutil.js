@@ -74,7 +74,7 @@ export function processIfNeeded(jStr) {
   const processingOptions = core.getInput("processingOptions");
   if (/percentDecode/.test(processingOptions)) {
     return decodeURIComponent(jStr);
-  } else {
-    return jStr;
   }
+  
+  return jStr;
 }
