@@ -57,8 +57,8 @@ describe("main.js", () => {
       });
       const whc = new MockWebhookClient({ webhookUrl: "" });
       await run(whc);
-      expect(core.warning).toHaveBeenCalled();
-      expect(core.warning.mock.lastCall[0]).toMatch(
+      expect(core.setFailed).toHaveBeenCalled();
+      expect(core.setFailed.mock.lastCall[0]).toMatch(
         /webhookUrl was not provided/gi
       );
       //resolvers[0]("test0 done");
@@ -77,8 +77,8 @@ describe("main.js", () => {
       expect(async () => {
         await run(whc);
       }).not.toThrow();
-      expect(core.warning).toHaveBeenCalled();
-      expect(core.warning.mock.lastCall[0]).toMatch(
+      expect(core.setFailed).toHaveBeenCalled();
+      expect(core.setFailed.mock.lastCall[0]).toMatch(
         /webhookUrl was not provided/gi
       );
       expect(whc.send_called).toBe(false);
