@@ -4,11 +4,11 @@
  *
  */
 
-import { getRandomDadJoke } from "./joke";
+import { getRandomDadJoke, getCat } from "./fun";
 
 import * as core from "@actions/core";
 
-import { EmbedBuilder, WebhookClient, MessageFlagsBitField } from "discord.js";
+import { EmbedBuilder, WebhookClient, MessageFlagsBitField, AttachmentBuilder } from "discord.js";
 
 import * as defaults from "./defaults";
 import {
@@ -56,6 +56,9 @@ export async function run(mockedWebhookClient = null) {
     
     const dadJoke = await getRandomDadJoke();
 
+    const addDadJoke = true;
+    const addCat = true;
+
     let fields = [];
     try {
       fields = JSON.parse(fieldsInput);
@@ -101,6 +104,7 @@ export async function run(mockedWebhookClient = null) {
     } else {
       core.debug(`Creating embed with severity ${severity}`);
       core.debug(JSON.stringify(fields));
+      
       const embed = new EmbedBuilder()
         .setTitle(
           truncateStringIfNeeded(title) || null
@@ -113,10 +117,11 @@ export async function run(mockedWebhookClient = null) {
         )
         .setFooter({
           text:
-            truncateStringIfNeeded(dadJoke) ||
+            truncateStringIfNeeded(addDadJoke ? dadJoke : "") ||
             null
         })
         .setThumbnail(thumbnailUrl || null)
+        .setImage(addCat ? "attachment://cat.jpg" : null)
         .setTimestamp();
 
       // Log the embed object for debugging
@@ -126,6 +131,13 @@ export async function run(mockedWebhookClient = null) {
         avatarURL: avatarUrl,
         embeds: [embed]
       };
+    }
+
+    if (addCat) {
+        const catUrl = await getCat();
+        core.debug(`Cat URL: ${catUrl}`);
+        const cat = new AttachmentBuilder(catUrl || "", { name: "cat.jpg" });
+        msg.files = [cat];
     }
 
     if (text) msg.content = text;
