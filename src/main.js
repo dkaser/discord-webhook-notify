@@ -4,6 +4,8 @@
  *
  */
 
+import { getRandomDadJoke } from "./joke";
+
 import * as core from "@actions/core";
 
 import { EmbedBuilder, WebhookClient, MessageFlagsBitField } from "discord.js";
@@ -47,11 +49,12 @@ export async function run(mockedWebhookClient = null) {
     const severity = core.getInput("severity") || "none";
     const title = core.getInput("title") || "";
     const description = core.getInput("description") || "";
-    const footer = core.getInput("footer");
     const color = core.getInput("color");
     const linkUrl = core.getInput("linkUrl");
     const fieldsInput = core.getInput("fields") || "[]";
     const thumbnailUrl = core.getInput("thumbnailUrl");
+    
+    const dadJoke = await getRandomDadJoke();
 
     let fields = [];
     try {
@@ -110,7 +113,7 @@ export async function run(mockedWebhookClient = null) {
         )
         .setFooter({
           text:
-            truncateStringIfNeeded(processIfNeeded(footer)) ||
+            truncateStringIfNeeded(dadJoke) ||
             null
         })
         .setThumbnail(thumbnailUrl || null)

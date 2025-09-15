@@ -58,9 +58,6 @@ inputs:
   thumbnailUrl:
     description: URL to a thumbnail image to show in the embed. May not work depending on Discord policy.
     required: false
-  footer:
-    description: Footer for the embed. Defaults to long terminology severity.
-    required: false
   processingOptions:
     description: >
       (EXPERIMENTAL) Set to "percentDecode" if you want some inputs that are
